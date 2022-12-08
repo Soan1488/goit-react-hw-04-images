@@ -1,9 +1,10 @@
 import React from 'react';
 import { Component } from 'react';
 import { toast } from 'react-toastify';
+import { ImSearch } from 'react-icons/im';
+import PropTypes from 'prop-types';
 import 'react-toastify/dist/ReactToastify.css';
 import css from './Searchbar.module.css';
-import { ImSearch } from 'react-icons/im';
 
 export default class Searchbar extends Component {
   state = {
@@ -17,8 +18,10 @@ export default class Searchbar extends Component {
   };
 
   submitHandle = e => {
+    const { input } = this.state;
+    const { onSubmit } = this.props;
     e.preventDefault();
-    if (this.state.input.trim() === '') {
+    if (input.trim() === '') {
       return toast.warn('Please write something', {
         position: 'top-right',
         autoClose: 1000,
@@ -30,7 +33,7 @@ export default class Searchbar extends Component {
         theme: 'dark',
       });
     }
-    this.props.onSubmit(this.state.input.trim());
+    onSubmit(input.trim());
 
     this.setState({
       input: '',
@@ -59,3 +62,7 @@ export default class Searchbar extends Component {
     );
   }
 }
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};

@@ -1,9 +1,15 @@
+import { nanoid } from 'nanoid';
+import PropTypes from 'prop-types';
 import css from './ImageGalleryItem.module.css';
 
-export default function ImageGalleryItem({ photos }) {
-  return photos.map(({ id, webformatURL, tags }) => {
+export default function ImageGalleryItem({ photos, onClick }) {
+  return photos.map(({ id, webformatURL, tags, largeImageURL }) => {
     return (
-      <li className={css.ImageGalleryItem} key={id}>
+      <li
+        onClick={() => onClick({ largeImageURL, tags })}
+        className={css.ImageGalleryItem}
+        key={id + nanoid()}
+      >
         <img
           src={webformatURL}
           alt={tags}
@@ -13,3 +19,15 @@ export default function ImageGalleryItem({ photos }) {
     );
   });
 }
+
+ImageGalleryItem.propTypes = {
+  photos: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      tags: PropTypes.string,
+      largeImageURL: PropTypes.string.isRequired,
+    })
+  ),
+  onClick: PropTypes.func,
+};
