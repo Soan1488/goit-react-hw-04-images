@@ -1,6 +1,6 @@
 import React from 'react';
 import { Component } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { ImSearch } from 'react-icons/im';
 import PropTypes from 'prop-types';
 import 'react-toastify/dist/ReactToastify.css';
@@ -58,6 +58,7 @@ export default class Searchbar extends Component {
             value={this.state.input}
           />
         </form>
+        <ToastContainer />
       </header>
     );
   }
