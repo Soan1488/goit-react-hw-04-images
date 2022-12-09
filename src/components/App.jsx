@@ -51,7 +51,6 @@ export default class App extends Component {
     const { page, search } = this.state;
     FetchPhoto(search, page)
       .then(({ hits, totalHits }) => {
-        console.log(hits.length <= 0);
         if (totalHits <= 0) {
           return Promise.reject(
             new Error(`Ooops, we can't download this request`)
