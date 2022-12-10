@@ -1,4 +1,5 @@
 import { Component, React } from 'react';
+import { toast } from 'react-toastify';
 import { Dna } from 'react-loader-spinner';
 import css from './App.module.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,6 +20,9 @@ export default class App extends Component {
   submitForm = value => {
     this.setState({
       search: value,
+      status: 'pending',
+      page: 1,
+      photos: [],
     });
   };
 
@@ -31,18 +35,7 @@ export default class App extends Component {
   };
   componentDidUpdate(prevProps, prevState) {
     const { page, search } = this.state;
-    if (prevState.search !== search) {
-      this.setState({
-        status: 'pending',
-        page: 1,
-        photos: [],
-      });
-      this.getPhotos();
-    }
-    if (prevState.page !== page) {
-      this.setState({
-        status: 'pending',
-      });
+    if (prevState.search !== search || prevState.page !== page) {
       this.getPhotos();
     }
   }
@@ -51,7 +44,6 @@ export default class App extends Component {
     const { page, search } = this.state;
     FetchPhoto(search, page)
       .then(({ hits, totalHits }) => {
-        console.log(hits.length <= 0);
         if (totalHits <= 0) {
           return Promise.reject(
             new Error(`Ooops, we can't download this request`)
@@ -65,6 +57,16 @@ export default class App extends Component {
         }));
       })
       .catch(error => {
+        toast.error(error.message, {
+          position: 'top-right',
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+        });
         this.setState({
           status: 'reject',
           error: error.message,
