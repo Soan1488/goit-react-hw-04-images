@@ -1,17 +1,13 @@
-import { Component, React } from 'react';
 import PropTypes from 'prop-types';
 import css from './ImageGallery.module.css';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 
-export default class ImageGallery extends Component {
-  render() {
-    const { photos, onClick } = this.props;
-    return (
-      <ul className={css.ImageGallery}>
-        <ImageGalleryItem photos={photos} onClick={onClick} />
-      </ul>
-    );
-  }
+export default function ImageGallery({ photos, onClick }) {
+  return (
+    <ul className={css.ImageGallery}>
+      <ImageGalleryItem photos={photos} onClick={onClick} />
+    </ul>
+  );
 }
 
 ImageGallery.propTypes = {

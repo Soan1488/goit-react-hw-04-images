@@ -1,4 +1,4 @@
-import { Component, React } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Dna } from 'react-loader-spinner';
 import css from './App.module.css';
@@ -9,39 +9,39 @@ import FetchPhoto from 'utils/PhotosApi';
 import Modal from 'components/Modal/Modal';
 import Button from 'components/Button/Button';
 
-export default class App extends Component {
-  state = {
-    photos: [],
-    status: 'idle',
-    img: '',
-    page: 1,
-    search: '',
-  };
-  submitForm = value => {
-    this.setState({
-      search: value,
-      status: 'pending',
-      page: 1,
-      photos: [],
-    });
+export default function App() {
+  const [photos, setPhotos] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [img, setImg] = useState('');
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [searchHits, setSearchHits] = useState(0);
+  const [searchTotalHits, setSearchTotalHits] = useState(0);
+  const [fetchError, setFetchError] = useState('');
+
+  const submitForm = value => {
+    setStatus('pending');
+    setSearch(value);
+    setPhotos([]);
+    setPage(1);
   };
 
-  modalOpen = img => {
-    this.setState({ img: img.largeImageURL });
+  const modalOpen = img => {
+    setImg(img.largeImageURL);
   };
 
-  modalClose = () => {
-    this.setState({ img: '' });
+  const modalClose = () => {
+    setImg('');
   };
-  componentDidUpdate(prevProps, prevState) {
-    const { page, search } = this.state;
-    if (prevState.search !== search || prevState.page !== page) {
-      this.getPhotos();
+
+  useEffect(() => {
+    if (search === '') {
+      return;
     }
-  }
+    getPhotos();
+  }, [search, page]);
 
-  getPhotos() {
-    const { page, search } = this.state;
+  function getPhotos() {
     FetchPhoto(search, page)
       .then(({ hits, totalHits }) => {
         if (totalHits <= 0) {
@@ -49,12 +49,10 @@ export default class App extends Component {
             new Error(`Ooops, we can't download this request`)
           );
         }
-        this.setState(({ photos }) => ({
-          photos: [...photos, ...hits],
-          hits: this.state.page * 12,
-          totalHits,
-          status: 'resolved',
-        }));
+        setPhotos([...photos, ...hits]);
+        setSearchHits(page * 12);
+        setSearchTotalHits(totalHits);
+        setStatus('resolved');
       })
       .catch(error => {
         toast.error(error.message, {
@@ -67,64 +65,59 @@ export default class App extends Component {
           progress: undefined,
           theme: 'dark',
         });
-        this.setState({
-          status: 'reject',
-          error: error.message,
-        });
+        setFetchError(error.message);
+        setStatus('reject');
       });
   }
 
-  showMoreBtnHandle = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const showMoreBtnHandle = () => {
+    setPage(page + 1);
   };
 
-  render() {
-    const { photos, status, img, hits, totalHits, error } = this.state;
-    if (status === 'idle') {
-      return (
-        <>
-          <Searchbar onSubmit={this.submitForm} />
-        </>
-      );
-    }
-    if (status === 'pending') {
-      return (
-        <div className={css.App}>
-          <Searchbar onSubmit={this.submitForm} />
-          <ImageGallery photos={photos} onClick={this.modalOpen} />
-          <div className={css.Loader}>
-            <Dna
-              visible={true}
-              height="80"
-              width="80"
-              ariaLabel="dna-loading"
-              wrapperStyle={{}}
-              wrapperClass="dna-wrapper"
-            />
-          </div>
+  if (status === 'idle') {
+    return (
+      <>
+        <Searchbar onSubmit={submitForm} />
+      </>
+    );
+  }
+  if (status === 'pending') {
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={submitForm} />
+        <ImageGallery photos={photos} onClick={modalOpen} />
+        <div className={css.Loader}>
+          <Dna
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="dna-loading"
+            wrapperStyle={{}}
+            wrapperClass="dna-wrapper"
+          />
         </div>
-      );
-    }
-    if (status === 'reject') {
-      return (
-        <>
-          <Searchbar onSubmit={this.submitForm} />
-          <ImageGallery photos={photos} onClick={this.modalOpen} />
-          <p className={css.Text}>{error}</p>
-        </>
-      );
-    }
-    if (status === 'resolved') {
-      return (
-        <div className={css.App}>
-          <Searchbar onSubmit={this.submitForm} />
-          <ImageGallery photos={photos} onClick={this.modalOpen} />
-          {hits <= totalHits && <Button onBtnClick={this.showMoreBtnHandle} />}
-          {img.length > 0 && <Modal photo={img} onClose={this.modalClose} />}
-        </div>
-      );
-    }
+      </div>
+    );
+  }
+  if (status === 'reject') {
+    return (
+      <>
+        <Searchbar onSubmit={submitForm} />
+        <ImageGallery photos={photos} onClick={modalOpen} />
+        <p className={css.Text}>{fetchError}</p>
+      </>
+    );
+  }
+  if (status === 'resolved') {
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={submitForm} />
+        <ImageGallery photos={photos} onClick={modalOpen} />
+        {searchHits <= searchTotalHits && (
+          <Button onBtnClick={showMoreBtnHandle} />
+        )}
+        {img.length > 0 && <Modal photo={img} onClose={modalClose} />}
+      </div>
+    );
   }
 }
