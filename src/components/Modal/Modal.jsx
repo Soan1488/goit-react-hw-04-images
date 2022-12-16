@@ -7,7 +7,6 @@ const modalRoot = document.querySelector('#modal-root');
 
 export default function Modal({ onClose, photo }) {
   function handleClose(e) {
-    console.log(e);
     if (e.code === 'Escape') {
       onClose();
     }
