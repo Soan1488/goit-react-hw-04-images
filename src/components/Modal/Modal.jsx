@@ -7,6 +7,7 @@ const modalRoot = document.querySelector('#modal-root');
 
 export default function Modal({ onClose, photo }) {
   function handleClose(e) {
+    console.log(e);
     if (e.code === 'Escape') {
       onClose();
     }
@@ -20,7 +21,8 @@ export default function Modal({ onClose, photo }) {
     return () => {
       window.removeEventListener('keydown', handleClose);
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return createPortal(
     <div className={css.Overlay} onClick={handleClose}>
