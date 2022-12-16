@@ -1,6 +1,6 @@
 const KEY = '30861394-45e6fcfd438676dc717df7503';
 
-async function FetchPhoto(name, page) {
+async function FetchPhoto(name, page = 1) {
   const options = new URLSearchParams({
     key: KEY,
     q: name,

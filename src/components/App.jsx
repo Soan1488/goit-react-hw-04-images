@@ -24,6 +24,7 @@ export default function App() {
     setSearch(value);
     setPhotos([]);
     setPage(1);
+    setSearchHits(0);
   };
 
   const modalOpen = img => {
@@ -38,37 +39,38 @@ export default function App() {
     if (search === '') {
       return;
     }
-    getPhotos();
-  }, [search, page]);
-
-  function getPhotos() {
-    FetchPhoto(search, page)
-      .then(({ hits, totalHits }) => {
-        if (totalHits <= 0) {
-          return Promise.reject(
-            new Error(`Ooops, we can't download this request`)
-          );
-        }
-        setPhotos([...photos, ...hits]);
-        setSearchHits(page * 12);
-        setSearchTotalHits(totalHits);
-        setStatus('resolved');
-      })
-      .catch(error => {
-        toast.error(error.message, {
-          position: 'top-right',
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'dark',
+    if (photos.length !== page * 12) {
+      FetchPhoto(search, page)
+        .then(({ hits, totalHits }) => {
+          if (totalHits <= 0) {
+            return Promise.reject(
+              new Error(`Ooops, we can't download this request`)
+            );
+          }
+          if (totalHits <= searchHits) {
+            return;
+          }
+          setPhotos([...photos, ...hits]);
+          setSearchHits(page * 12);
+          setSearchTotalHits(totalHits);
+          setStatus('resolved');
+        })
+        .catch(error => {
+          toast.error(error.message, {
+            position: 'top-right',
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+          });
+          setFetchError(error.message);
+          setStatus('reject');
         });
-        setFetchError(error.message);
-        setStatus('reject');
-      });
-  }
+    }
+  }, [page, photos, search, searchHits]);
 
   const showMoreBtnHandle = () => {
     setPage(page + 1);
