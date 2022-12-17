@@ -15,16 +15,14 @@ export default function App() {
   const [img, setImg] = useState('');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [searchHits, setSearchHits] = useState(0);
-  const [searchTotalHits, setSearchTotalHits] = useState(0);
   const [fetchError, setFetchError] = useState('');
+  const [showBtn, setShowBtn] = useState(false);
 
   const submitForm = value => {
     setStatus('pending');
     setSearch(value);
     setPhotos([]);
     setPage(1);
-    setSearchHits(0);
   };
 
   const modalOpen = img => {
@@ -39,41 +37,35 @@ export default function App() {
     if (search === '') {
       return;
     }
-    if (photos.length !== page * 12) {
-      FetchPhoto(search, page)
-        .then(({ hits, totalHits }) => {
-          if (totalHits <= 0) {
-            return Promise.reject(
-              new Error(`Ooops, we can't download this request`)
-            );
-          }
-          if (totalHits <= searchHits) {
-            return;
-          }
-          setPhotos([...photos, ...hits]);
-          setSearchHits(page * 12);
-          setSearchTotalHits(totalHits);
-          setStatus('resolved');
-        })
-        .catch(error => {
-          toast.error(error.message, {
-            position: 'top-right',
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: 'dark',
-          });
-          setFetchError(error.message);
-          setStatus('reject');
+    FetchPhoto(search, page)
+      .then(({ hits, totalHits }) => {
+        if (totalHits <= 0) {
+          return Promise.reject(
+            new Error(`Ooops, we can't download this request`)
+          );
+        }
+        page < Math.ceil(totalHits / 12) ? setShowBtn(true) : setShowBtn(false);
+        setPhotos(prevPhotos => [...prevPhotos, ...hits]);
+        setStatus('resolved');
+      })
+      .catch(error => {
+        toast.error(error.message, {
+          position: 'top-right',
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
         });
-    }
-  }, [page, photos, search, searchHits]);
+        setFetchError(error.message);
+        setStatus('reject');
+      });
+  }, [page, search]);
 
   const showMoreBtnHandle = () => {
-    setPage(page + 1);
+    setPage(prevPage => prevPage + 1);
   };
 
   if (status === 'idle') {
@@ -115,9 +107,7 @@ export default function App() {
       <div className={css.App}>
         <Searchbar onSubmit={submitForm} />
         <ImageGallery photos={photos} onClick={modalOpen} />
-        {searchHits <= searchTotalHits && (
-          <Button onBtnClick={showMoreBtnHandle} />
-        )}
+        {showBtn && <Button onBtnClick={showMoreBtnHandle} />}
         {img.length > 0 && <Modal photo={img} onClose={modalClose} />}
       </div>
     );
