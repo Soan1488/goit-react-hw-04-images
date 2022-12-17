@@ -6,16 +6,15 @@ import css from './Modal.module.css';
 const modalRoot = document.querySelector('#modal-root');
 
 export default function Modal({ onClose, photo }) {
-  function handleClose(e) {
-    if (e.code === 'Escape') {
-      onClose();
-    }
-    if (e.currentTarget === e.target) {
-      onClose();
-    }
-  }
-
   useEffect(() => {
+    function handleClose(e) {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+      if (e.currentTarget === e.target) {
+        onClose();
+      }
+    }
     window.addEventListener('keydown', handleClose);
     return () => {
       window.removeEventListener('keydown', handleClose);
